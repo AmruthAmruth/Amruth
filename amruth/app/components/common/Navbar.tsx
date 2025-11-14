@@ -1,108 +1,107 @@
 "use client";
 
-import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { useTheme } from "next-themes";
-import { Sun, Moon } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Menu, X } from "lucide-react";
 
-const navLinks = [
-  { href: "/", label: "Home" },
-  { href: "/about", label: "About" },
-  { href: "/projects", label: "Projects" },
-  { href: "/contact", label: "Contact" },
-];
-
-export function Navbar() {
-  const pathname = usePathname();
-  const { theme, setTheme } = useTheme();
-  const [mounted, setMounted] = useState(false);
-  const [menuOpen, setMenuOpen] = useState(false);
-
-  useEffect(() => setMounted(true), []);
-
-  if (!mounted) return null;
+export default function Navbar() {
+  const [open, setOpen] = useState(false);
 
   return (
-    <nav className="fixed top-0 left-0 w-full bg-surface-light/80 dark:bg-surface-dark/80 backdrop-blur-md border-b border-border-light dark:border-border-dark z-50">
-      <div className="max-w-6xl mx-auto flex justify-between items-center px-6 py-4">
-        {/* Logo / Brand */}
-        <Link
-          href="/"
-          className="text-2xl font-bold text-text-light dark:text-text-dark"
-        >
-          <span className="text-primary">Amruth</span>.dev
-        </Link>
-
-        {/* Desktop Links */}
-        <div className="hidden md:flex items-center gap-6">
-          {navLinks.map(({ href, label }) => (
-            <Link
-              key={href}
-              href={href}
-              className={`transition font-medium ${
-                pathname === href
-                  ? "text-primary"
-                  : "text-subtext-light dark:text-subtext-dark hover:text-primary"
-              }`}
-            >
-              {label}
-            </Link>
-          ))}
-
-          {/* Theme Toggle */}
-          <button
-            onClick={() => setTheme(theme === "light" ? "dark" : "light")}
-            className="ml-4 p-2 rounded-md hover:bg-border-light dark:hover:bg-border-dark transition"
+    <header className="fixed top-0 left-0 w-full z-50">
+      {/* Background Blur + Border */}
+      <div className="backdrop-blur-xl bg-black/20 border-b border-white/10">
+        <nav className="max-w-7xl mx-auto flex items-center justify-between py-4 px-6">
+          
+          {/* Logo */}
+          <motion.a
+            whileHover={{ scale: 1.05 }}
+            className="text-2xl font-bold bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent cursor-pointer"
+            href="/"
           >
-            {theme === "light" ? (
-              <Moon size={18} className="text-subtext-light" />
-            ) : (
-              <Sun size={18} className="text-subtext-dark" />
-            )}
-          </button>
-        </div>
+            Amruth.dev
+          </motion.a>
 
-        {/* Mobile menu button */}
-        <button
-          className="md:hidden text-text-light dark:text-text-dark"
-          onClick={() => setMenuOpen(!menuOpen)}
-        >
-          ☰
-        </button>
+          {/* Desktop Menu */}
+          <div className="hidden md:flex items-center gap-10 text-gray-200 font-medium">
+            <NavLink href="/">Home</NavLink>
+            <NavLink href="#projects">Projects</NavLink>
+            <NavLink href="#ai">AI</NavLink>
+            <NavLink href="/contact">Contact</NavLink>
+          </div>
+
+          {/* Mobile Menu Button */}
+          <button
+            className="md:hidden text-gray-200"
+            onClick={() => setOpen(!open)}
+          >
+            {open ? <X size={28} /> : <Menu size={28} />}
+          </button>
+        </nav>
       </div>
 
-      {/* Mobile Menu */}
-      {menuOpen && (
-        <div className="md:hidden bg-surface-light dark:bg-surface-dark border-t border-border-light dark:border-border-dark flex flex-col items-center py-4 space-y-3">
-          {navLinks.map(({ href, label }) => (
-            <Link
-              key={href}
-              href={href}
-              onClick={() => setMenuOpen(false)}
-              className={`transition ${
-                pathname === href
-                  ? "text-primary"
-                  : "text-subtext-light dark:text-subtext-dark hover:text-primary"
-              }`}
-            >
-              {label}
-            </Link>
-          ))}
-
-          {/* Theme Toggle in mobile */}
-          <button
-            onClick={() => setTheme(theme === "light" ? "dark" : "light")}
-            className="p-2 rounded-md hover:bg-border-light dark:hover:bg-border-dark transition"
+      {/* Mobile Menu Drawer */}
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.2 }}
+            className="md:hidden absolute top-[68px] left-0 w-full bg-black/70 backdrop-blur-xl border-b border-white/10 text-center py-6"
           >
-            {theme === "light" ? (
-              <Moon size={18} className="text-subtext-light" />
-            ) : (
-              <Sun size={18} className="text-subtext-dark" />
-            )} 
-          </button>
-        </div>
-      )}
-    </nav>
+            <div className="flex flex-col gap-6 text-gray-200 text-lg font-medium">
+              <MobileLink href="/" onClick={() => setOpen(false)}>Home</MobileLink>
+              <MobileLink href="#projects" onClick={() => setOpen(false)}>Projects</MobileLink>
+              <MobileLink href="#ai" onClick={() => setOpen(false)}>AI Assistant</MobileLink>
+              <MobileLink href="/contact" onClick={() => setOpen(false)}>Contact</MobileLink>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </header>
+  );
+}
+
+/* ---------------------- Sub Components ---------------------- */
+
+function NavLink({ href, children }: { href: string; children: React.ReactNode }) {
+  return (
+    <motion.a
+      href={href}
+      whileHover={{ scale: 1.08, opacity: 1 }}
+      className="relative opacity-70 hover:opacity-100 transition cursor-pointer"
+    >
+      {children}
+
+      {/* Underline hover animation */}
+      <motion.span
+        className="absolute bottom-[-4px] left-0 h-[2px] w-full bg-gradient-to-r from-purple-400 to-blue-400 rounded-full"
+        initial={{ scaleX: 0 }}
+        whileHover={{ scaleX: 1 }}
+        transition={{ duration: 0.3 }}
+      />
+    </motion.a>
+  );
+}
+
+function MobileLink({
+  href,
+  children,
+  onClick,
+}: {
+  href: string;
+  children: React.ReactNode;
+  onClick: () => void;
+}) {
+  return (
+    <motion.a
+      href={href}
+      onClick={onClick}
+      whileHover={{ scale: 1.05 }}
+      className="cursor-pointer"
+    >
+      {children}
+    </motion.a>
   );
 }
